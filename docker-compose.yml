@@ -1,0 +1,74 @@
+services:
+  database:
+    image: mysql:8.0
+    container_name: tasklist_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: tasklist
+      MYSQL_USER: tasklist
+      MYSQL_PASSWORD: "root"
+    volumes:
+      - tasklist_db_data:/var/lib/mysql
+      - ./app.sql:/docker-entrypoint-initdb.d/app.sql
+    command: --default-authentication-plugin=caching_sha2_password
+    ports:
+      - "6101:3306"
+    networks:
+      - tasklist_network
+  app:
+    image: laravel_php_83
+    container_name: tasklist_backend
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/html/
+    depends_on:
+      - database
+    networks:
+      - tasklist_network
+  redis:
+    image: redis:alpine
+    container_name: tasklist_redis
+    restart: unless-stopped
+    ports:
+      - "6102:6379"
+    networks:
+      - tasklist_network
+  webserver:
+    image: nginx:alpine
+    container_name: tasklist_webserver
+    restart: unless-stopped
+    ports:
+      - "6100:80"
+    volumes:
+      - ./:/var/www/html/
+      - ./.docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - database
+      - app
+      - redis
+    networks:
+      - tasklist_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: tasklist_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+    ports:
+      - "6103:80"
+    depends_on:
+      - database
+    networks:
+      - tasklist_network
+networks:
+  tasklist_network:
+    driver: bridge
+
+volumes:
+  tasklist_db_data:
