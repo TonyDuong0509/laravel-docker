@@ -41,7 +41,7 @@ RUN touch /var/log/supervisor/supervisord.log
 RUN chown -R www-data:www-data /var/log/supervisor
 
 ### Cronjob
-COPY ../docker/cronjob /etc/cron.d/laravel-cron
+COPY ../.docker/cronjob /etc/cron.d/laravel-cron
 RUN chmod 0644 /etc/cron.d/laravel-cron
 RUN crontab /etc/cron.d/laravel-cron
 RUN touch /var/log/cron.log
