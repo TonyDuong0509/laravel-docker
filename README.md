@@ -62,6 +62,7 @@ This setup provides a multi-container environment with the following services:
 
 3. **Start the environment**
    ```bash
+   docker-compose up database -d
    docker-compose up -d
    ```
 
